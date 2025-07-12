@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang='en'>
+<head>
+	<title>(AI)DENTITY: Who Are We in the Age of Algorithms?</title>
+	<meta charset='utf-8'>
+	<meta name='viewport' content='width=device-width, initial-scale=1'>
+	
+	<!-- External Dependencies -->
+	<script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+	<link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+	<script src='https://d3js.org/d3.v7.min.js'></script>
+	<script src='https://unpkg.com/scrollama'></script>
+	<link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+	
+	<style>
+		* { box-sizing: border-box; }
+		
+		html, body {
+			margin: 0;
+			padding: 0;
+			background: #f3dbba;
+			font-family: 'Lato', sans-serif;
+			color: #282828;
+			line-height: 1.65;
+		}
+		
+		h1, h2, h3 {
+			font-family: 'Lato', sans-serif;
+			line-height: 1.2;
+			margin: 0;
+			font-weight: 900;
+		}
+		
+		p { margin: 0; font-family: 'Lato', sans-serif; }
+		
+		.text-container {
+			position: relative;
+			z-index: 2;
+			pointer-events: none;
+		}
+		
+		.step {
+			height: 100vh;
+			pointer-events: none;
+		}
+		
+		.text-wrapper {
+			margin: 0 auto;
+			pointer-events: none;
+			background: linear-gradient(180deg,
+				rgba(243,219,186,0) 0%,
+				rgba(243,219,186,0.85) 50px,
+				rgba(243,219,186,0.85) calc(100% - 50px),
+				rgba(243,219,186,0) 100%);
+			position: relative;
+			padding: 70px 0 50px;
+		}
+		
+		.text-wrapper p {
+			font-size: 7vw;
+			margin: 0 auto;
+			max-width: 900px;
+			width: calc(100% - 40px);
+			font-family: 'Lato', sans-serif;
+			font-weight: 500;
+			line-height: 1.2;
+			color: rgba(0,0,0,0.8);
+			pointer-events: all;
+		}
+		
+		@media (min-width: 1000px) {
+			.text-wrapper p { font-size: 66px; }
+		}
+		
+		@media (max-width: 600px) {
+			.text-wrapper p { font-size: 10vw; }
+		}
+		
+		.text-wrapper .big {
+			font-size: 12vw;
+			font-family: 'Lato', sans-serif;
+			text-transform: uppercase;
+			letter-spacing: 0.02em;
+			font-weight: 900;
+		}
+		
+		@media (min-width: 1000px) {
+			.text-wrapper .big { font-size: 120px; }
+		}
+		
+		.persona-highlight {
+			background: #312c25;
+			color: #f3dbba;
+			padding: 1vw 2vw;
+			box-decoration-break: clone;
+			-webkit-box-decoration-break: clone;
+			text-transform: uppercase;
+			font-size: 5vw;
+			cursor: pointer;
+			font-family: 'Lato', sans-serif;
+			font-weight: 700;
+			transition: all 0.3s ease;
+		}
+		
+		.persona-highlight:hover { background: #514741; }
+		
+		@media (min-width: 1000px) {
+			.persona-highlight {
+				padding: 10px 20px;
+				font-size: 48px;
+			}
+		}
+		
+		.fixed-map {
+			position: fixed;
+			top: 50%;
+			left: 0;
+			width: 100%;
+			height: calc(100% - 100px);
+			transform: translate(0, -50%);
+			background: none;
+			z-index: 1;
+		}
+		
+		.map-container {
+			width: 100%;
+			height: 100%;
+		}
+		
+		.chart-title {
+			position: absolute;
+			bottom: 2rem;
+			left: 2rem;
+			z-index: 10;
+			max-width: 400px;
+			pointer-events: none;
+		}
+		
+		.chart-title p {
+			background: rgba(243,219,186,0.9);
+			padding: 1rem;
+			margin: 0;
+			font-family: 'Lato', sans-serif;
+		}
+		
+		.chart-hed {
+			font-size: 1.5rem;
+			font-weight: 700;
+			margin-bottom: 0.5rem;
+		}
+		
+		.chart-dek { font-size: 1rem; }
+		
+		header {
+			position: relative;
+			padding: 4rem 2rem 2rem;
+			text-align: center;
+			background: #f3dbba;
+		}
+		
+		.intro {
+			max-width: 60rem;
+			margin: 0 auto;
+			text-align: center;
+			padding: 2rem;
+		}
+		
+		.intro__hed {
+			font-family: 'Lato', sans-serif;
+			font-size: 4rem;
+			text-transform: uppercase;
+			letter-spacing: 0.02em;
+			margin-bottom: 1rem;
+			font-weight: 900;
+		}
+		
+		.intro__dek {
+			font-family: 'Lato', sans-serif;
+			font-size: 1.5rem;
+			color: #666;
+			margin-bottom: 2rem;
+		}
+		
+		.loading-screen {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: #f3dbba;
+			z-index: 9999;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: opacity 0.5s ease;
+		}
+		
+		.loading-content { text-align: center; }
+		
+		.loading-spinner {
+			width: 60px;
+			height: 60px;
+			border: 3px solid rgba(40,40,40,0.1);
+			border-top-color: #282828;
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+			margin: 0 auto 2rem;
+		}
+		
+		@keyframes spin {
+			to { transform: rotate(360deg); }
+		}
+		
+		.loading-text {
+			font-family: 'Lato', sans-serif;
+			font-size: 1.2rem;
+			color: #666;
+		}
+		
+		.persona-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 2rem;
+			max-width: 1200px;
+			margin: 2rem auto;
+			padding: 0 2rem;
+		}
+		
+		.persona-card {
+			background: rgba(255,255,255,0.5);
+			border-radius: 8px;
+			padding: 1.5rem;
+			transition: transform 0.3s ease, box-shadow 0.3s ease;
+			cursor: pointer;
+			border-left: 4px solid transparent;
+		}
+		
+		.persona-card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+		}
+		
+		.persona-card.highlighted {
+			transform: translateY(-10px) scale(1.02);
+			box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+			background: rgba(255,255,255,0.8);
+		}
+		
+		.persona-avatar-container {
+			width: 60px;
+			height: 60px;
+			margin-bottom: 1rem;
+		}
+		
+		.persona-avatar {
+			width: 100%;
+			height: 100%;
+		}
+		
+		.persona-name {
+			font-family: 'Lato', sans-serif;
+			font-weight: 700;
+			font-size: 1.2rem;
+			margin-bottom: 0.5rem;
+		}
+		
+		.persona-size {
+			font-size: 2rem;
+			font-family: 'Lato', sans-serif;
+			color: #312c25;
+			margin-bottom: 0.5rem;
+			font-weight: 900;
+		}
+		
+		.persona-percentage {
+			font-size: 1.1rem;
+			font-weight: 600;
+			color: #666;
+			margin-bottom: 0.5rem;
+		}
+		
+		.persona-description {
+			font-size: 0.9rem;
+			color: #666;
+			line-height: 1.4;
+		}
+		
+		@media (max-width: 600px) {
+			.intro__hed { font-size: 2.5rem; }
+			.intro__dek { font-size: 1.2rem; }
+			.fixed-map {
+				top: auto;
+				bottom: 0;
+				height: 50vh;
+				transform: none;
+			}
+			.persona-grid { grid-template-columns: 1fr; }
+		}
+		
+		#tooltip {
+			position: absolute;
+			background: rgba(255, 255, 255, 0.95);
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			padding: 10px;
+			font-size: 12px;
+			pointer-events: none;
+			visibility: hidden;
+			z-index: 1000;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+		}
+		
+		#color-legend {
+			position: absolute;
+			bottom: 2rem;
+			right: 2rem;
+			background: rgba(255, 255, 255, 0.9);
+			padding: 1rem;
+			border-radius: 4px;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+			max-width: 250px;
+		}
+		
+		.text-wrapper:before {
+			content: attr(data-step-num);
+			position: absolute;
+			top: 30px;
+			left: 0;
+			text-transform: uppercase;
+			font-family: 'Lato', sans-serif;
+			font-size: 0.8rem;
+			color: #666;
+			letter-spacing: 0.1em;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="loading-screen" id="loadingScreen">
+		<div class="loading-content">
+			<div class="loading-spinner"></div>
+			<p class="loading-text">Loading global AI perspectives...</p>
+		</div>
+	</div>
+
+	<main id="content">
+		<header>
+			<div class="intro">
+				<h1 class="intro__hed">(AI)DENTITY</h1>
+				<p class="intro__dek">Who Are We in the Age of Algorithms?</p>
+				<p class="intro__subdek">A Global Dialogues Story</p>
+			</div>
+		</header>
+		
+		<div class="fixed-map">
+			<div class="map-container" id="map"></div>
+			<div class="chart-title">
+				<p class="chart-hed"><span>Global AI Perspectives</span></p>
+				<p class="chart-dek"><span>59,542 voices from around the world</span></p>
+			</div>
+			<div id="color-legend"></div>
+		</div>
+		
+		<div id="tooltip"></div>
+		
+		<div class="text-container">
+			<div class="text-wrapper" data-step-num="Fact 1 of 10">
+				<p class="big">59,542 voices</p>
+				<p>from around the world shared their hopes and fears about artificial intelligence.</p>
+			</div>
+			<div class="step" data-step="intro"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 2 of 10">
+				<p>They fell into <span class="persona-highlight">5 distinct personas</span>, each with their own unique relationship to AI.</p>
+			</div>
+			<div class="step" data-step="personas-overview"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 3 of 10">
+				<p>The majority—nearly 60%—are <span class="persona-highlight">Balanced Social Participants</span>, focused on how AI affects human connection.</p>
+			</div>
+			<div class="step" data-step="social-persona"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 4 of 10">
+				<p>But zoom out, and you'll see how perspectives about AI vary dramatically across the globe.</p>
+			</div>
+			<div class="step" data-step="fear-map"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 5 of 10">
+				<p>In some regions, <span class="persona-highlight">economic concerns</span> dominate—will AI take our jobs?</p>
+			</div>
+			<div class="step" data-step="economic-fears"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 6 of 10">
+				<p>While others worry more about <span class="persona-highlight">surveillance and control</span>—will AI erode our privacy?</p>
+			</div>
+			<div class="step" data-step="surveillance-fears"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 7 of 10">
+				<p>Some communities fear AI will erode their <span class="persona-highlight">cultural values and traditions</span>.</p>
+			</div>
+			<div class="step" data-step="cultural-fears"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 8 of 10">
+				<p>These perspectives cluster in surprising ways, creating a global tapestry of AI cultural response.</p>
+			</div>
+			<div class="step" data-step="regional-patterns"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 9 of 10">
+				<p class="big">Meet the 5 personas</p>
+				<div class="persona-grid" id="personaGrid"></div>
+			</div>
+			<div class="step" data-step="persona-details"></div>
+			
+			<div class="text-wrapper" data-step-num="Fact 10 of 10">
+				<p>As AI reshapes our world, understanding these diverse cultural perspectives becomes crucial for building technology that serves all of humanity.</p>
+			</div>
+			<div class="step" data-step="conclusion"></div>
+		</div>
+	</main>
+
+	<script>
+		console.log('=== (AI)DENTITY: Starting Application ===');
+		
+		// PERSONA DATA
+		const PERSONA_DATA = {
+			personas: {
+				0: {
+					name: "The Balanced Dependency Participant",
+					description: "relatively optimistic about AI; displays variable response patterns; provides brief, focused responses; particularly focused on technology dependence issues",
+					size: 3947,
+					percentage: 6.6,
+					color: "#7994b5"
+				},
+				1: {
+					name: "The Balanced Social Participant", 
+					description: "relatively optimistic about AI; displays variable response patterns; provides brief, focused responses; particularly focused on social connection and isolation",
+					size: 35344,
+					percentage: 59.4,
+					color: "#93b778"
+				},
+				2: {
+					name: "The Consistent Social Responder",
+					description: "relatively optimistic about AI; displays variable response patterns; provides brief, focused responses; particularly focused on social connection and isolation", 
+					size: 13241,
+					percentage: 22.2,
+					color: "#d17c3f"
+				},
+				3: {
+					name: "The Balanced Security Participant",
+					description: "relatively optimistic about AI; displays variable response patterns; provides brief, focused responses; particularly focused on safety and security risks",
+					size: 2023,
+					percentage: 3.4,
+					color: "#b63e36"
+				},
+				4: {
+					name: "The Consistent Cultural Responder",
+					description: "relatively optimistic about AI; displays variable response patterns; provides brief, focused responses; particularly focused on cultural and value preservation",
+					size: 4987,
+					percentage: 8.4,
+					color: "#be7249"
+				}
+			}
+		};
+
+		// PERSONA AVATARS
+		const PERSONA_AVATARS = {
+			0: `<svg viewBox="0 0 100 100" class="persona-avatar">
+				<circle cx="50" cy="50" r="40" fill="#7994b5" opacity="0.2"/>
+				<rect x="35" y="35" width="30" height="30" fill="#7994b5" opacity="0.8"/>
+				<circle cx="50" cy="50" r="15" fill="#312c25"/>
+				<path d="M40 40 L60 40 L60 45 L55 50 L45 50 L40 45 Z" fill="#f3dbba"/>
+			</svg>`,
+			1: `<svg viewBox="0 0 100 100" class="persona-avatar">
+				<circle cx="50" cy="50" r="40" fill="#93b778" opacity="0.2"/>
+				<circle cx="35" cy="35" r="8" fill="#93b778"/>
+				<circle cx="65" cy="35" r="8" fill="#93b778"/>
+				<circle cx="35" cy="65" r="8" fill="#93b778"/>
+				<circle cx="65" cy="65" r="8" fill="#93b778"/>
+				<circle cx="50" cy="50" r="12" fill="#312c25"/>
+				<path d="M35 35 L50 50 L65 35 M35 65 L50 50 L65 65" stroke="#312c25" stroke-width="2" fill="none"/>
+			</svg>`,
+			2: `<svg viewBox="0 0 100 100" class="persona-avatar">
+				<circle cx="50" cy="50" r="40" fill="#d17c3f" opacity="0.2"/>
+				<polygon points="50,20 65,35 65,65 50,80 35,65 35,35" fill="#d17c3f" opacity="0.8"/>
+				<circle cx="50" cy="50" r="12" fill="#312c25"/>
+				<path d="M40 45 L60 45 M40 55 L60 55" stroke="#f3dbba" stroke-width="2"/>
+			</svg>`,
+			3: `<svg viewBox="0 0 100 100" class="persona-avatar">
+				<circle cx="50" cy="50" r="40" fill="#b63e36" opacity="0.2"/>
+				<path d="M50 15 L70 30 L70 70 L50 85 L30 70 L30 30 Z" fill="#b63e36" opacity="0.8"/>
+				<circle cx="50" cy="50" r="10" fill="#312c25"/>
+				<path d="M45 30 L55 30 L55 40 L45 40 Z M45 60 L55 60 L55 70 L45 70 Z" fill="#f3dbba"/>
+			</svg>`,
+			4: `<svg viewBox="0 0 100 100" class="persona-avatar">
+				<circle cx="50" cy="50" r="40" fill="#be7249" opacity="0.2"/>
+				<rect x="25" y="25" width="50" height="50" fill="#be7249" opacity="0.8" rx="5"/>
+				<circle cx="50" cy="50" r="8" fill="#312c25"/>
+				<path d="M35 35 L65 35 M35 45 L65 45 M35 55 L65 55 M35 65 L65 65" stroke="#f3dbba" stroke-width="1.5"/>
+			</svg>`
+		};
+
+		let map = null;
+		let scroller = null;
+
+		// UTILITY FUNCTIONS
+		function debounce(func, wait) {
+			let timeout;
+			return function executedFunction(...args) {
+				const later = () => {
+					clearTimeout(timeout);
+					func(...args);
+				};
+				clearTimeout(timeout);
+				timeout = setTimeout(later, wait);
+			};
+		}
+
+		function isMobile() {
+			return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+		}
+
+		// CREATE PERSONA GRID
+		function createPersonaGrid() {
+			const grid = d3.select('#personaGrid');
+			
+			Object.entries(PERSONA_DATA.personas).forEach(([id, persona]) => {
+				const card = grid.append('div')
+					.attr('class', 'persona-card')
+					.attr('data-persona', id)
+					.style('border-left-color', persona.color);
+				
+				const avatar = card.append('div')
+					.attr('class', 'persona-avatar-container')
+					.html(PERSONA_AVATARS[id]);
+				
+				card.append('div')
+					.attr('class', 'persona-name')
+					.text(persona.name);
+				
+				card.append('div')
+					.attr('class', 'persona-size')
+					.text(`${persona.size.toLocaleString()} people`);
+				
+				card.append('div')
+					.attr('class', 'persona-percentage')
+					.text(`${persona.percentage}% of participants`);
+				
+				card.append('div')
+					.attr('class', 'persona-description')
+					.text(persona.description);
+			});
+		}
+
+		// INITIALIZE MAP
+		function initializeMap() {
+			mapboxgl.accessToken = 'pk.eyJ1IjoiZG9jazQyNDIiLCJhIjoiY2trOXV2MW9zMDExbTJvczFydTkxOTJvMiJ9.7qeHgJkUfxOaWEYtBGNU9w';
+			
+			map = new mapboxgl.Map({
+				container: 'map',
+				style: 'mapbox://styles/mapbox/light-v10',
+				center: [0, 20],
+				zoom: 2,
+				interactive: false
+			});
+			
+			map.on('load', () => {
+				console.log('✓ Map initialized successfully');
+				
+				// Add simple visualization
+				map.addSource('personas', {
+					type: 'geojson',
+					data: {
+						type: 'FeatureCollection',
+						features: [
+							{
+								type: 'Feature',
+								properties: { name: 'North America', persona: 1, color: '#93b778' },
+								geometry: { type: 'Point', coordinates: [-100, 45] }
+							},
+							{
+								type: 'Feature',
+								properties: { name: 'Europe', persona: 1, color: '#93b778' },
+								geometry: { type: 'Point', coordinates: [10, 50] }
+							},
+							{
+								type: 'Feature',
+								properties: { name: 'Asia-Pacific', persona: 2, color: '#d17c3f' },
+								geometry: { type: 'Point', coordinates: [120, 30] }
+							}
+						]
+					}
+				});
+				
+				map.addLayer({
+					id: 'persona-points',
+					type: 'circle',
+					source: 'personas',
+					paint: {
+						'circle-radius': 50,
+						'circle-color': ['get', 'color'],
+						'circle-opacity': 0.6
+					}
+				});
+			});
+		}
+
+		// INITIALIZE SCROLLYTELLING
+		function initScrollytelling() {
+			scroller = scrollama();
+			
+			scroller
+				.setup({
+					step: ".step",
+					progress: true,
+					offset: 0.5
+				})
+				.onStepEnter((response) => {
+					const step = d3.select(response.element).attr("data-step");
+					console.log('Entering step:', step);
+					
+					// Update chart title based on step
+					const hedSpan = d3.select('.chart-hed span');
+					const dekSpan = d3.select('.chart-dek span');
+					
+					switch(step) {
+						case 'intro':
+							hedSpan.text('59,542 voices from around the world');
+							dekSpan.text('Shared their perspectives on artificial intelligence');
+							break;
+						case 'personas-overview':
+							hedSpan.text('5 distinct AI personas emerge');
+							dekSpan.text('Each with unique relationships to artificial intelligence');
+							break;
+						case 'social-persona':
+							hedSpan.style('color', '#93b778').text('Balanced Social Participants - 59.4%');
+							dekSpan.text('Focused on how AI affects human connection');
+							break;
+						case 'fear-map':
+							hedSpan.style('color', '#333').text('AI perspectives vary dramatically by region');
+							dekSpan.text('Different cultures approach AI in unique ways');
+							break;
+						default:
+							hedSpan.style('color', '#333').text('Global AI Cultural Perspectives');
+							dekSpan.text('Understanding diversity in the age of algorithms');
+					}
+				});
+		}
+
+		// MAIN INITIALIZATION
+		function init() {
+			console.log('=== Initializing (AI)DENTITY ===');
+			
+			// Remove loading screen
+			setTimeout(() => {
+				d3.select('#loadingScreen').style('opacity', '0');
+				setTimeout(() => {
+					d3.select('#loadingScreen').style('display', 'none');
+				}, 500);
+			}, 1000);
+			
+			// Create persona grid
+			createPersonaGrid();
+			console.log('✓ Persona grid created');
+			
+			// Initialize map
+			initializeMap();
+			
+			// Initialize scrollytelling after delay
+			setTimeout(() => {
+				initScrollytelling();
+				console.log('✓ Scrollytelling initialized');
+			}, 2000);
+			
+			console.log('✓ (AI)DENTITY initialization complete');
+		}
+
+		// Start when DOM is ready
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', init);
+		} else {
+			init();
+		}
+	</script>
+</body>
+</html>

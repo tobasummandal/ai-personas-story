@@ -1,0 +1,12 @@
+[
+  {"text":"How concerned are you about job loss due to AI?","options":["Not at all","Slightly","Moderately","Very","Extremely"],"scores":[1,2,3,4,5]},
+  {"text":"How concerned are you about surveillance and control by AI?","options":["Not at all","Slightly","Moderately","Very","Extremely"],"scores":[1,2,3,4,5]},
+  {"text":"How concerned are you about AI causing social isolation?","options":["Not at all","Slightly","Moderately","Very","Extremely"],"scores":[1,2,3,4,5]},
+  {"text":"How concerned are you about safety and security risks from AI?","options":["Not at all","Slightly","Moderately","Very","Extremely"],"scores":[1,2,3,4,5]},
+  {"text":"How concerned are you about AI impacting cultural values?","options":["Not at all","Slightly","Moderately","Very","Extremely"],"scores":[1,2,3,4,5]},
+  {"text":"How dependent do you feel on AI tools in your daily life?","options":["Not at all","Slightly","Moderately","Very","Extremely"],"scores":[1,2,3,4,5]},
+  {"text":"How optimistic are you about the overall future of AI?","options":["Not at all","Slightly","Moderately","Very","Extremely"],"scores":[1,2,3,4,5]},
+  {"text":"How likely are you to use AI to manage your daily schedule?","options":["Not at all","Slightly","Moderately","Very","Extremely"],"scores":[1,2,3,4,5]},
+  {"text":"How much do you agree that AI can understand and respect human values?","options":["Strongly disagree","Disagree","Neutral","Agree","Strongly agree"],"scores":[1,2,3,4,5]},
+  {"text":"How interested are you in learning new AI technologies?","options":["Not at all","A little","Somewhat","Quite a bit","Extremely"],"scores":[1,2,3,4,5]}
+]
